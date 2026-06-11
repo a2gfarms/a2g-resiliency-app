@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Air2Ground Resilient — Action Detail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Newsreader:ital,opsz@0,6..72;1,6..72&family=Spline+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4efe6;--bg-2:#ece4d4;--ink:#23291f;--ink-soft:#525a45;
+    --moss:#5b6b3a;--moss-deep:#3f4a28;--moss-bright:#74894a;
+    --clay:#b4633a;--clay-deep:#8f4a28;--gold:#c79a3d;--gold-soft:#e0c074;
+    --water:#4a7a8c;--line:#dcd3c1;--line-soft:#e6ddcd;--card:#fcf9f2;
+    --r:16px;
+    --sh-1:0 1px 2px rgba(35,41,31,.05);
+    --sh-2:0 2px 6px rgba(35,41,31,.08), 0 1px 2px rgba(35,41,31,.06);
+    --sh-3:0 6px 16px rgba(35,41,31,.10), 0 2px 5px rgba(35,41,31,.07);
+    --sh-4:0 14px 38px rgba(35,41,31,.16), 0 4px 10px rgba(35,41,31,.10);
+    --sh-moss:0 8px 22px rgba(63,74,40,.30);
+    --ease:cubic-bezier(.22,.68,.28,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(130% 90% at 82% -12%, rgba(199,154,61,.13), transparent 58%),
+      radial-gradient(95% 75% at -12% 112%, rgba(91,107,58,.13), transparent 55%),
+      var(--bg);
+    color:var(--ink);font-family:"Spline Sans",sans-serif;line-height:1.55;
+    -webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;
+  }
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");}
+  .wrap{position:relative;z-index:1;max-width:700px;margin:0 auto;padding:0 24px 100px}
+
+  /* back */
+  .back{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink-soft);text-decoration:none;
+    margin:26px 0 6px;cursor:pointer;font-weight:500;transition:.2s var(--ease)}
+  .back:hover{color:var(--moss);transform:translateX(-3px)}
+  .back svg{width:16px;height:16px}
+
+  /* profile toggle (POC) — pill segmented control */
+  .switch{display:flex;flex-direction:column;align-items:center;gap:10px;margin:14px 0 4px;text-align:center}
+  .switch .sl{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+  .seg{display:inline-flex;background:var(--bg-2);border-radius:999px;padding:5px;box-shadow:inset 0 1px 3px rgba(35,41,31,.1);position:relative}
+  .seg button{position:relative;z-index:1;font-family:inherit;font-size:12.5px;font-weight:600;border:none;background:none;
+    color:var(--ink-soft);border-radius:999px;padding:9px 16px;cursor:pointer;transition:color .3s var(--ease);white-space:nowrap}
+  .seg button.on{color:#f4efe6}
+  .seg .pill{position:absolute;top:5px;bottom:5px;border-radius:999px;background:linear-gradient(160deg,var(--moss-bright),var(--moss-deep));
+    box-shadow:var(--sh-moss);transition:.4s var(--ease);z-index:0}
+  .switch .note{font-size:11.5px;color:var(--ink-soft);font-style:italic;max-width:52ch;margin-top:2px}
+
+  /* centered title block */
+  .titleblock{text-align:center;margin:26px 0 22px;animation:fade .5s var(--ease) both}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .tags{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-bottom:15px}
+  .tag{font-size:11px;letter-spacing:.03em;padding:5px 12px;border-radius:999px;background:var(--bg-2);color:var(--moss-deep);font-weight:600}
+  .tag.gold{background:rgba(199,154,61,.18);color:#8a6a1c}
+  .tag.clay{background:rgba(180,99,58,.14);color:var(--clay)}
+  h1{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(29px,6vw,44px);line-height:1.05;letter-spacing:-.02em}
+  .flourish{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:16px}
+  .flourish .ln{width:38px;height:1px;background:var(--line)}
+  .flourish .dia{width:6px;height:6px;background:var(--gold);transform:rotate(45deg)}
+
+  /* WHY card — personalized */
+  .why{position:relative;background:linear-gradient(155deg,var(--moss-deep),#2b331d);color:#f1eee4;border-radius:20px;
+    padding:24px 24px 24px 26px;box-shadow:var(--sh-4);overflow:hidden;margin-bottom:14px}
+  .why .glow{position:absolute;right:-50px;top:-50px;width:200px;height:200px;border-radius:50%;
+    background:radial-gradient(circle,rgba(199,154,61,.38),transparent 70%)}
+  .why .lab{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;opacity:.8;display:flex;align-items:center;gap:8px;margin-bottom:10px;position:relative;z-index:1}
+  .why .lab svg{width:14px;height:14px}
+  .why p{font-family:"Newsreader",serif;font-size:18.5px;line-height:1.5;position:relative;z-index:1}
+  .foryou{font-size:10px;letter-spacing:.08em;text-transform:uppercase;background:rgba(241,238,228,.16);color:var(--gold-soft);
+    padding:4px 10px 4px 8px;border-radius:999px;font-family:"Spline Sans";font-weight:700;margin-left:auto;display:inline-flex;align-items:center;gap:5px}
+  .foryou svg{width:11px;height:11px}
+
+  /* meta strip */
+  .meta-row{display:flex;justify-content:center;gap:0;margin:18px auto 26px;max-width:480px}
+  .meta-row .m{flex:1;text-align:center;padding:0 10px}
+  .meta-row .m+.m{border-left:1px solid var(--line)}
+  .meta-row .m .ic{color:var(--moss);margin-bottom:5px}
+  .meta-row .m .ic svg{width:18px;height:18px}
+  .meta-row .m b{display:block;font-size:14px;font-weight:600}
+  .meta-row .m span{font-size:11px;color:var(--ink-soft)}
+
+  /* constraint callout */
+  .callout{position:relative;display:flex;gap:14px;align-items:flex-start;background:var(--card);border-radius:15px;padding:16px 18px;
+    margin-bottom:30px;box-shadow:var(--sh-2);overflow:hidden;isolation:isolate}
+  .callout::before{content:"";position:absolute;inset:0;border-radius:15px;padding:1.5px;z-index:2;
+    background:linear-gradient(135deg,rgba(180,99,58,.5),var(--line-soft));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+  .callout .cic{width:38px;height:38px;border-radius:11px;background:linear-gradient(150deg,var(--clay),var(--clay-deep));color:#fff;
+    flex:0 0 auto;display:grid;place-items:center;box-shadow:0 6px 16px rgba(143,74,40,.3)}
+  .callout .cic svg{width:19px;height:19px}
+  .callout h4{font-size:14.5px;margin-bottom:2px}
+  .callout p{font-size:13.5px;color:var(--ink-soft)}
+
+  /* section heading centered */
+  .sec{text-align:center;margin:8px 0 18px}
+  .sec .ey{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--moss);font-weight:700;margin-bottom:9px;display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap}
+  .sec .ey .src{font-size:9px;letter-spacing:.1em;padding:3px 9px;border-radius:999px;background:var(--bg-2);color:var(--moss-deep)}
+  .sec h3{font-family:"Fraunces",serif;font-size:24px;font-weight:600}
+  .sec p{font-size:13.5px;color:var(--ink-soft);margin-top:5px}
+
+  /* progress */
+  .prog{height:8px;background:var(--bg-2);border-radius:999px;overflow:hidden;margin:0 auto 20px;max-width:560px;box-shadow:inset 0 1px 2px rgba(35,41,31,.08)}
+  .prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--moss),var(--gold));border-radius:999px;transition:width .5s var(--ease)}
+
+  /* steps — checkable */
+  .step{position:relative;background:var(--card);border-radius:15px;padding:16px 17px;margin-bottom:11px;box-shadow:var(--sh-2);
+    display:flex;gap:15px;align-items:flex-start;cursor:pointer;transition:transform .22s var(--ease),box-shadow .22s var(--ease);overflow:hidden;isolation:isolate}
+  .step::before{content:"";position:absolute;inset:0;border-radius:15px;padding:1.5px;z-index:2;
+    background:linear-gradient(135deg,var(--line),var(--line-soft));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;transition:.3s var(--ease)}
+  .step::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:15px;background:linear-gradient(135deg,rgba(116,137,74,.13),rgba(199,154,61,.10));opacity:0;transition:.34s var(--ease)}
+  .step:hover{transform:translateY(-2px);box-shadow:var(--sh-3)}
+  .step:hover::before{background:linear-gradient(135deg,var(--moss),var(--gold-soft))}
+  .step.done::after{opacity:1}
+  .step.done::before{background:linear-gradient(135deg,var(--moss),var(--gold))}
+  .box{position:relative;width:28px;height:28px;border-radius:9px;flex:0 0 auto;display:grid;place-items:center;margin-top:1px;transition:.3s var(--ease)}
+  .box .o{position:absolute;inset:0;border-radius:9px;border:2px solid var(--line);transition:.3s var(--ease)}
+  .box svg{width:15px;height:15px;color:#fff;opacity:0;transform:scale(.4) rotate(-12deg);transition:.32s var(--ease);position:relative}
+  .step.done .box .o{border-color:transparent;background:linear-gradient(150deg,var(--moss-bright),var(--moss-deep));box-shadow:var(--sh-moss)}
+  .step.done .box svg{opacity:1;transform:none}
+  .step .txt h5{font-size:15.5px;font-weight:600;margin-bottom:3px;transition:.2s}
+  .step.done .txt h5{color:var(--ink-soft);text-decoration:line-through}
+  .step .txt p{font-size:13.5px;color:var(--ink-soft);line-height:1.45}
+
+  /* supplies */
+  .supplies{position:relative;background:var(--card);border-radius:16px;padding:8px 20px 18px;box-shadow:var(--sh-2);margin:0 0 30px;overflow:hidden;isolation:isolate}
+  .supplies::before{content:"";position:absolute;inset:0;border-radius:16px;padding:1px;z-index:2;
+    background:linear-gradient(135deg,var(--line),var(--line-soft));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+  .supply{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--line-soft);font-size:14.5px}
+  .supply:last-of-type{border-bottom:none}
+  .supply .nm{font-weight:500}
+  .supply .nm small{display:block;font-weight:400;color:var(--ink-soft);font-size:12.5px;margin-top:1px}
+  .supply .pr{font-family:"Fraunces",serif;font-weight:600;color:var(--moss-deep);white-space:nowrap;padding-left:14px}
+  .supply-total{display:flex;justify-content:space-between;align-items:center;padding-top:14px;margin-top:6px;border-top:2px solid var(--ink);font-size:15px}
+  .supply-total b{font-family:"Fraunces",serif;font-size:18px}
+
+  /* coach */
+  .coach{position:relative;background:var(--card);border-radius:18px;padding:20px;box-shadow:var(--sh-2);overflow:hidden;isolation:isolate}
+  .coach::before{content:"";position:absolute;inset:0;border-radius:18px;padding:1.5px;z-index:2;
+    background:linear-gradient(135deg,rgba(180,99,58,.45),var(--line-soft));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+  .coach .ch-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .coach .av{width:38px;height:38px;border-radius:11px;background:linear-gradient(150deg,var(--clay),var(--clay-deep));display:grid;place-items:center;color:#fff;box-shadow:0 6px 16px rgba(143,74,40,.3)}
+  .coach .av svg{width:19px;height:19px}
+  .coach b{font-size:14.5px}
+  .coach .ch-head span{font-size:11.5px;color:var(--ink-soft);display:block}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}
+  .chip{font-size:12.5px;border:none;background:var(--bg-2);border-radius:999px;padding:9px 14px;cursor:pointer;transition:.2s var(--ease);font-family:inherit;color:var(--ink-soft);box-shadow:var(--sh-1)}
+  .chip:hover{color:var(--ink);transform:translateY(-2px);box-shadow:var(--sh-2);background:#fff}
+  .bubble{background:var(--bg-2);border-radius:14px;border-top-left-radius:5px;padding:14px 16px;font-size:14.5px;font-family:"Newsreader",serif;line-height:1.55;margin-bottom:12px;display:none}
+  .bubble.show{display:block;animation:bub .4s var(--ease) both}
+  @keyframes bub{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .ask{display:flex;gap:9px}
+  .ask input{flex:1;border:1.5px solid var(--line);border-radius:12px;padding:12px 15px;font-family:inherit;font-size:14px;background:#fff;color:var(--ink);transition:.2s}
+  .ask input:focus{outline:none;border-color:var(--moss);box-shadow:0 0 0 3px rgba(91,107,58,.12)}
+  .ask button{border:none;background:linear-gradient(160deg,var(--moss),var(--moss-deep));color:#fff;border-radius:12px;padding:0 17px;cursor:pointer;box-shadow:var(--sh-2);transition:.2s var(--ease)}
+  .ask button:hover{transform:translateY(-2px);box-shadow:var(--sh-3)}
+  .ask button svg{width:18px;height:18px;display:block}
+  .note{font-size:11.5px;color:var(--ink-soft);margin-top:11px;font-style:italic}
+
+  .legend{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin:34px 0 0;padding-top:20px;border-top:1px dashed var(--line);font-size:12px;color:var(--ink-soft)}
+  .legend span{display:flex;align-items:center;gap:7px}
+  .dot{width:10px;height:10px;border-radius:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Back to my path</a>
+
+  <div class="switch">
+    <div class="sl">Proof of concept · view as</div>
+    <div class="seg" id="seg">
+      <span class="pill" id="pill"></span>
+      <button class="on" data-p="apt" onclick="setProfile('apt',this)">Apartment</button>
+      <button data-p="suburb" onclick="setProfile('suburb',this)">Suburb</button>
+      <button data-p="rural" onclick="setProfile('rural',this)">Rural</button>
+    </div>
+    <div class="note">Same to-do — switch the profile and watch the intro, constraint callout, and supply list adapt. That's the personalization engine.</div>
+  </div>
+
+  <div class="titleblock">
+    <div class="tags" id="tags"></div>
+    <h1>Store a 2-week water reserve</h1>
+    <div class="flourish"><span class="ln"></span><span class="dia"></span><span class="ln"></span></div>
+  </div>
+
+  <div class="why">
+    <div class="glow"></div>
+    <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6 6 11a6 6 0 0 1-12 0c0-5 6-11 6-11z"/></svg> Why this matters for you <span class="foryou"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6C19 16.5 12 21 12 21z"/></svg> For you</span></div>
+    <p id="why">…</p>
+  </div>
+
+  <div class="meta-row">
+    <div class="m"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><b id="mTime">—</b><span>time</span></div>
+    <div class="m"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6 6 11a6 6 0 0 1-12 0c0-5 6-11 6-11z"/></svg></div><b id="mGoal">—</b><span>target</span></div>
+    <div class="m"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20v-5M10 20V10M16 20V7M22 20V4" transform="scale(.8) translate(2 3)"/></svg></div><b id="mDiff">—</b><span>level</span></div>
+  </div>
+
+  <div class="callout">
+    <div class="cic" id="coIc"></div>
+    <div><h4 id="coTitle">—</h4><p id="coBody">—</p></div>
+  </div>
+
+  <div class="sec">
+    <div class="ey">The steps</div>
+    <h3>Your path, step by step</h3>
+    <p>Check each off as you go — finishing them all lifts your Water score.</p>
+  </div>
+  <div class="prog"><i id="progFill"></i></div>
+  <div id="steps"></div>
+
+  <div class="sec" style="margin-top:30px">
+    <div class="ey">What you'll need</div>
+    <h3 id="supTitle">Your starter kit</h3>
+    <p id="supSub">—</p>
+  </div>
+  <div class="supplies" id="supplies"></div>
+
+  <div class="coach">
+    <div class="ch-head">
+      <div class="av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4m0 0h-1m1 0h1M5 12H4m16 0h-1M8 16a4 4 0 0 1 8 0v3H8z"/></svg></div>
+      <div><b>Ask the coach about this step</b><span>Knows your full profile · powered by Claude</span></div>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="bubble" id="bubble"></div>
+    <div class="ask"><input id="askInput" placeholder="e.g. My closet is tiny — where do I even put this?"><button onclick="ask()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg></button></div>
+    <div class="note">Demo replies are illustrative. Live, this is a real Claude coach answering about <em>this step</em> with your full profile in mind.</div>
+  </div>
+
+</div>
+
+<script>
+const LOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+const HEART='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6C19 16.5 12 21 12 21z"/></svg>';
+const DATA={
+  apt:{
+    tags:[['Water',''],['Week 1','gold'],['$','clay']],
+    why:"You're working with limited space and a landlord's rules, so we're skipping barrels and bulky gear entirely. Your whole two-week reserve can tuck into a closet or slide under the bed — nothing your lease would ever flag. People assume you need a basement or a yard to be ready. You don't. You need a corner you control and about an hour. Let's use them.",
+    time:'About an hour',goal:'~14 gallons',diff:'Beginner-friendly',
+    co:{ic:LOCK,title:'Lease-safe by design',body:'Nothing here is permanent or visible. No holes, no hookups, no marks on the walls. If you moved out tomorrow, it all comes with you. Fully renter- and HOA-safe.'},
+    supTitle:'Your starter kit',
+    sup:{sub:'A starter reserve for one person — honest cheap path first.',
+      items:[['3\u00d7 5-gallon stackable jugs','Food-grade, BPA-free','$21'],['Water preserver drops','Stretches the storage life','$4'],['Your tap','Free \u2014 you already have it','$0']],total:'$25'},
+    chips:["My closet is tiny \u2014 where does this go?","Can I really not reuse old jugs?","Is my tap water safe to just store?"],
+    answers:{0:"In an apartment, go vertical, not wide. Three 5-gallon jugs stack into a column about the footprint of a laundry basket \u2014 bottom of a coat closet, under the bed, or beside the fridge all work. You don't need a dedicated spot, just a corner you control.",
+      1:"We'd skip the old jugs. Milk and juice containers are hard to fully sanitize and the plastic breaks down, so they leak within months. The food-grade jugs on your list cost a few dollars and last for years. This is the one corner we wouldn't cut.",
+      2:"Yes \u2014 if it comes from a treated municipal tap, your water is already safe to store. Fill straight from the faucet, add the preserver drops, seal it tight, and store it cool and dark. Refresh it about once a year. No filtering needed just to store it."}
+  },
+  suburb:{
+    tags:[['Water',''],['Week 1','gold'],['$$','clay']],
+    why:"You've got a garage or a utility space and a little more room to work, so we'll build something sturdier than a closet kit \u2014 a real household reserve with rotation built in, so it stays fresh without you babysitting it. You don't need to turn the garage into a warehouse. A couple of smart containers and a simple habit covers your whole household through most of what an outage or a boil-water notice will throw at you.",
+    time:'About two hours',goal:'~56 gallons',diff:'Easy with a helper',
+    co:{ic:LOCK,title:'Works within your HOA',body:'Everything here lives inside your garage or utility space \u2014 nothing visible from the street, nothing an HOA has any say over. We keep every suggestion inside the lines.'},
+    supTitle:'Your household kit',
+    sup:{sub:'A household reserve with rotation built in.',
+      items:[['2\u00d7 7-gallon rigid carriers','Stackable, spigot-ready','$60'],['30-gallon barrel + bung','Your main store, garage-friendly','$55'],['Siphon pump','Easy rotation, no heavy lifting','$15'],['Preserver + test strips','Storage life + a safety check','$18']],total:'$148'},
+    chips:["How often do I actually rotate the barrel?","Where in the garage is safest?","Do I need to treat city water?"],
+    answers:{0:"With preserver added, the barrel is good for a long stretch, but run the test strips every six months and top off the 7-gallon carriers seasonally since those are your grab-and-go. Set a recurring reminder so it's automatic and you never have to think about it.",
+      1:"Off the concrete and out of direct sun. Concrete can affect the plastic over time and sun degrades it, so set the barrel on a board or pallet along an interior garage wall \u2014 away from anything with strong fumes like fuel or paint.",
+      2:"If it's treated city water, you can fill straight from the tap and just add preserver to stretch the storage life. The test strips let you confirm it's still good down the road. Easy."}
+  },
+  rural:{
+    tags:[['Water',''],['Week 1','gold'],['$$','clay']],
+    why:"You've got the space most people wish they had \u2014 but if your water comes from a well, an outage means your pump stops and the tap goes dry. So stored water matters more out here, not less. We'll build real capacity, and because well water isn't treated the way city water is, we'll be a little more careful about how you store and refresh it. You're not starting from zero \u2014 you're starting from capable.",
+    time:'A half-day project',goal:'100+ gallons',diff:'Worth doing right',
+    co:{ic:HEART,title:'Well water needs an extra step',body:'Because your water isn\u2019t municipally treated, you\u2019ll want to treat it before long-term storage rather than filling straight from the tap. Your coach walks you through the right method for your specific well \u2014 this is one we get exact, not approximate.'},
+    supTitle:'Your capacity kit',
+    sup:{sub:'Real capacity, scaled to your place.',
+      items:[['1\u20132\u00d7 55-gallon food-grade barrels','With bung wrench + siphon','$90\u2013150'],['Larger tank (optional)','150\u2013300 gal if you have space','varies'],['Large-volume preserver + strips','Sized for the capacity','$25'],['Well-water treatment','Coach specifies the method','\u2014']],total:'$130+'},
+    chips:["My water's from a well \u2014 what's different?","What happens to my water in an outage?","How much capacity is actually enough?"],
+    answers:{0:"The big difference is treatment. Well water isn't chlorinated the way city water is, so before long-term storage we treat it rather than filling straight from the tap. Tell your coach about your well and we'll give you the exact method for your setup \u2014 this is one we get precise on.",
+      1:"This is the key one out here: most wells run on an electric pump, so when the power's out, the tap goes dry. That's exactly why a stored reserve matters more for you \u2014 it's your water when the pump can't deliver. Capacity is your friend.",
+      2:"Start with the one-gallon-per-person-per-day baseline for two weeks, then add margin for animals, a garden, and the fact that resupply is farther away out here. For most rural households that lands north of 100 gallons \u2014 your coach will size it to your place."}
+  }
+};
+const STEPS=[
+  ['Figure out your number','One gallon per person per day \u2014 half to drink, half for everything else. Two weeks a person is 14 gallons. Count everyone under your roof, pets included, and write it down before you buy a thing.'],
+  ['Get containers you can trust','Use containers actually made for water \u2014 food-grade, sturdy, sealable. This is the one place we\u2019d ask you not to improvise. Old milk jugs and bleach bottles break down and leak. Buy once, store for good.'],
+  ['Fill it, treat it, seal it','On treated city water? Fill straight from the tap \u2014 it\u2019s already safe to store. Add a preserver to stretch its life, following the label exactly. Seal each container tight and write the date on it. (On a well? Your coach adds one step first.)'],
+  ['Store it cool, dark, and off the ground','Heat and sunlight are what age stored water, so the back of a closet beats a hot garage. Keep it off bare concrete \u2014 a board does it \u2014 and away from fuel, paint, or anything with strong fumes. Cool, dark, and boring is the goal.'],
+  ['Set the reminder that keeps it fresh','Clean, sealed water keeps a long time, but refresh it about once a year so it always tastes right and you know your system works. Put a recurring reminder on your phone right now \u2014 a birthday, the first day of a season. This is the step most people skip, and the one that makes it something you can count on.']
+];
+let prof='apt';
+function render(){
+  const d=DATA[prof];
+  document.getElementById('tags').innerHTML=d.tags.map(([t,c])=>`<span class="tag ${c}">${t}</span>`).join('');
+  document.getElementById('why').textContent=d.why;
+  document.getElementById('mTime').textContent=d.time;
+  document.getElementById('mGoal').textContent=d.goal;
+  document.getElementById('mDiff').textContent=d.diff;
+  document.getElementById('coIc').innerHTML=d.co.ic;
+  document.getElementById('coTitle').textContent=d.co.title;
+  document.getElementById('coBody').textContent=d.co.body;
+  document.getElementById('supTitle').textContent=d.supTitle;
+  document.getElementById('supSub').textContent=d.sup.sub;
+  document.getElementById('supplies').innerHTML=d.sup.items.map(([n,s,p])=>`<div class="supply"><div class="nm">${n}<small>${s}</small></div><div class="pr">${p}</div></div>`).join('')+`<div class="supply-total"><span>Starter total</span><b>${d.sup.total}</b></div>`;
+  document.getElementById('chips').innerHTML=d.chips.map((c,i)=>`<button class="chip" onclick="chip(${i})">${c}</button>`).join('');
+  document.getElementById('bubble').classList.remove('show');
+  renderSteps();
+}
+function renderSteps(){
+  const box=document.getElementById('steps');box.innerHTML='';
+  STEPS.forEach((s)=>{
+    const d=document.createElement('div');d.className='step';
+    d.innerHTML=`<div class="box"><span class="o"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><div class="txt"><h5>${s[0]}</h5><p>${s[1]}</p></div>`;
+    d.onclick=()=>{d.classList.toggle('done');updateProg();};
+    box.appendChild(d);
+  });
+  updateProg();
+}
+function updateProg(){const done=document.querySelectorAll('.step.done').length;document.getElementById('progFill').style.width=(done/STEPS.length*100)+'%';}
+function movePill(btn){const pill=document.getElementById('pill');pill.style.left=btn.offsetLeft+'px';pill.style.width=btn.offsetWidth+'px';}
+function setProfile(p,btn){prof=p;document.querySelectorAll('.seg button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');movePill(btn);render();}
+function chip(i){const b=document.getElementById('bubble');b.textContent=DATA[prof].answers[i];b.classList.remove('show');void b.offsetWidth;b.classList.add('show');}
+function ask(){const inp=document.getElementById('askInput');if(!inp.value.trim())return;const b=document.getElementById('bubble');b.textContent="In the live app I'd answer that against your full profile and this exact step. For the demo, tap one of the suggested questions above to see how the coach tailors its reply.";b.classList.remove('show');void b.offsetWidth;b.classList.add('show');inp.value='';}
+document.getElementById('askInput').addEventListener('keydown',e=>{if(e.key==='Enter')ask();});
+window.addEventListener('load',()=>{const on=document.querySelector('.seg button.on');movePill(on);});
+render();
+</script>
+</body>
+</html>
