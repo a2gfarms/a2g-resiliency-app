@@ -17,6 +17,8 @@ Built on three pillars: beautiful, calm design · an AI coach primed on the Air2
 - A complete authoring backlog: 27 cores across five pillars, with a 9-item launch set identified
 - The a2g logo cut out clean and tinted to the palette
 
+**Phase 1 is built:** the real Next.js app (assessment → profile → path) lives in `app/`, deploys to Netlify as a static export via `netlify.toml`. Phases 2–5 (auth, persistence, live coach, payments) build on this foundation per `docs/BUILD-BRIEF.md`.
+
 **What's next:** see [`docs/NEXT-STEPS.md`](docs/NEXT-STEPS.md).
 
 ---

@@ -1,0 +1,5 @@
+# Air2Ground Resilient — Netlify build configuration
+# This file overrides the dashboard settings, so deploys are reproducible.
+[build]
+  command = "npm run build"
+  publish = "out"
