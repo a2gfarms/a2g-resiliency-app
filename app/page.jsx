@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { supabase } from '../lib/supabase';
 
 /* ─────────────────────────────────────────────────────────────
-   Air2Ground Resilient — Phase 1
-   Assessment → personalized profile → ranked path.
-   Logic ported faithfully from the approved prototype (the spec).
-   Phase 2 adds auth + persistence; Phase 3 adds the live coach.
+   Air2Ground Resilient — Stage 2
+   Assessment → personalized profile → ranked path, now with
+   magic-link accounts: the profile persists and every completed
+   assessment records a score snapshot (the living score's memory).
+   Scoring and ranking remain ported faithfully from the prototype.
    ───────────────────────────────────────────────────────────── */
 
 const ICONS = {
@@ -153,6 +155,29 @@ const CANNED = [
   "I'd plan around that directly. It's not a roadblock — it just changes the order we do things. Here's the adjusted next step that respects it.",
 ];
 
+/* ── persistence (Stage 2) ── */
+const STASH_KEY = 'a2g-pending-profile';
+
+async function persistAssessment(session, answers) {
+  const { pillars, overall } = computeScores(answers);
+  const { error: pErr } = await supabase.from('profiles').upsert({
+    user_id: session.user.id,
+    living: answers.living,
+    skills: answers.skills,
+    budget: answers.budget,
+    constraints: answers.constraints,
+    worry: answers.worry,
+    pace: answers.pace,
+  });
+  if (pErr) throw pErr;
+  const { error: sErr } = await supabase.from('score_snapshots').insert({
+    user_id: session.user.id,
+    overall,
+    pillars,
+  });
+  if (sErr) throw sErr;
+}
+
 /* ── small shared pieces ── */
 const Svg = ({ d, ...rest }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"
@@ -172,6 +197,70 @@ function OptionCard({ opt, selected, onPick }) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
       </span>
     </button>
+  );
+}
+
+/* ── keep-your-ground: accounts without passwords ── */
+function KeepCard({ session, saveState, onSend, onSignOut }) {
+  const [email, setEmail] = useState('');
+  const [phase, setPhase] = useState('idle'); // idle · sending · sent · error
+  if (!supabase) return null;
+
+  if (session) {
+    return (
+      <div className="keep">
+        <div className="kp-head">
+          <div className="kic"><Svg d={ICONS.seed} /></div>
+          <div>
+            <b>Your ground is kept</b>
+            <span>
+              {saveState === 'saving' && 'Saving your profile…'}
+              {saveState === 'saved' && `Signed in as ${session.user.email} — your profile and baseline are saved.`}
+              {saveState === 'error' && "Signed in — we couldn't reach your saved profile just now. It's safe on this device and we'll retry next time."}
+              {saveState === 'idle' && `Signed in as ${session.user.email}.`}
+            </span>
+          </div>
+        </div>
+        <div className="kp-row">
+          <button className="restart" onClick={onSignOut}>Sign out</button>
+        </div>
+      </div>
+    );
+  }
+
+  const send = async () => {
+    const addr = email.trim();
+    if (!addr || !addr.includes('@') || phase === 'sending') return;
+    setPhase('sending');
+    try { await onSend(addr); setPhase('sent'); }
+    catch { setPhase('error'); }
+  };
+
+  return (
+    <div className="keep">
+      <div className="kp-head">
+        <div className="kic"><Svg d={ICONS.seed} /></div>
+        <div>
+          <b>Keep your ground</b>
+          <span>Save your profile and your path, and watch your baseline rise as you build. No password — we&rsquo;ll email you a sign-in link.</span>
+        </div>
+      </div>
+      {phase === 'sent' ? (
+        <div className="kp-sent">Your link is on the way. Open it on this device and you&rsquo;ll land right back here — everything saved.</div>
+      ) : (
+        <>
+          <div className="ask">
+            <input type="email" value={email} placeholder="you@example.com" autoComplete="email"
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && send()} />
+            <button onClick={send} aria-label="Email me my link" disabled={phase === 'sending'}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z" /></svg>
+            </button>
+          </div>
+          {phase === 'error' && <div className="kp-err">That didn&rsquo;t go through — mind checking the address and trying again?</div>}
+        </>
+      )}
+    </div>
   );
 }
 
@@ -237,7 +326,7 @@ function QuestionScreen({ q, value, onChange, onBack, onNext, isLast, loading })
   );
 }
 
-function Results({ state, onRestart }) {
+function Results({ state, onRestart, session, welcomeBack, saveState, onSend, onSignOut }) {
   const { pillars, overall } = useMemo(() => computeScores(state), [state]);
   const actions = useMemo(() => rankActions(state), [state]);
   const tier = [...TIERS].reverse().find((t) => overall >= t.min);
@@ -272,8 +361,8 @@ function Results({ state, onRestart }) {
   return (
     <section className="screen active">
       <div className="qhead" style={{ marginTop: 6 }}>
-        <div className="ey">Your resilience profile</div>
-        <h2>Here&rsquo;s where you stand</h2>
+        <div className="ey">{welcomeBack ? 'Welcome back' : 'Your resilience profile'}</div>
+        <h2>{welcomeBack ? 'Here’s your ground' : 'Here’s where you stand'}</h2>
       </div>
 
       <div className="score-card">
@@ -327,6 +416,8 @@ function Results({ state, onRestart }) {
         ))}
       </div>
 
+      <KeepCard session={session} saveState={saveState} onSend={onSend} onSignOut={onSignOut} />
+
       <div className="coach">
         <div className="ch-head">
           <div className="av"><Svg d='<path d="M12 8V4m0 0h-1m1 0h1M5 12H4m16 0h-1M8 16a4 4 0 0 1 8 0v3H8z"/>' style={{ strokeWidth: 1.8 }} /></div>
@@ -360,12 +451,98 @@ export default function Page() {
   const [answers, setAnswers] = useState(EMPTY);
   const [finishing, setFinishing] = useState(false);
 
+  const [session, setSession] = useState(null);
+  const [welcomeBack, setWelcomeBack] = useState(false);
+  const [saveState, setSaveState] = useState('idle'); // idle · saving · saved · error
+  const sessionRef = useRef(null);
+  const restoredOnce = useRef(false);
+
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, [screen]);
+
+  useEffect(() => {
+    if (!supabase) return;
+    const handle = (s) => {
+      sessionRef.current = s;
+      setSession(s);
+      if (s && !restoredOnce.current) {
+        restoredOnce.current = true;
+        afterSignIn(s);
+      }
+    };
+    supabase.auth.getSession().then(({ data }) => handle(data.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => handle(s));
+    return () => sub.subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // On sign-in: persist a just-finished assessment if one is stashed,
+  // otherwise restore the saved profile from the database.
+  const afterSignIn = async (s) => {
+    let stash = null;
+    try { stash = JSON.parse(localStorage.getItem(STASH_KEY) || 'null'); } catch {}
+    if (stash && stash.living) {
+      setAnswers(stash);
+      setScreen(7);
+      setSaveState('saving');
+      try {
+        await persistAssessment(s, stash);
+        localStorage.removeItem(STASH_KEY);
+        setSaveState('saved');
+      } catch { setSaveState('error'); }
+      return;
+    }
+    const { data } = await supabase
+      .from('profiles').select('*').eq('user_id', s.user.id).maybeSingle();
+    if (data && data.living) {
+      setAnswers({
+        living: data.living, skills: data.skills, budget: data.budget,
+        constraints: data.constraints || [], worry: data.worry, pace: data.pace,
+      });
+      setWelcomeBack(true);
+      setSaveState('saved');
+      setScreen(7);
+    }
+  };
+
+  const sendLink = async (email) => {
+    // Stash the fresh answers so the magic-link round trip can't lose them.
+    localStorage.setItem(STASH_KEY, JSON.stringify(answers));
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.origin },
+    });
+    if (error) throw error;
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem(STASH_KEY);
+    restoredOnce.current = false;
+    setWelcomeBack(false);
+    setSaveState('idle');
+    setAnswers(EMPTY);
+    setScreen(0);
+  };
 
   const goNext = () => {
     if (screen === 6) {
       setFinishing(true);
-      setTimeout(() => { setFinishing(false); setScreen(7); }, 900);
+      setTimeout(() => {
+        setFinishing(false);
+        setScreen(7);
+        setWelcomeBack(false);
+        const s = sessionRef.current;
+        if (supabase && s) {
+          setSaveState('saving');
+          persistAssessment(s, answers)
+            .then(() => setSaveState('saved'))
+            .catch(() => {
+              // Keep a copy on-device so a later visit can retry the save.
+              localStorage.setItem(STASH_KEY, JSON.stringify(answers));
+              setSaveState('error');
+            });
+        }
+      }, 900);
     } else setScreen((s) => s + 1);
   };
 
@@ -405,7 +582,15 @@ export default function Page() {
       )}
 
       {screen === 7 && (
-        <Results state={answers} onRestart={() => { setAnswers(EMPTY); setScreen(0); }} />
+        <Results
+          state={answers}
+          session={session}
+          welcomeBack={welcomeBack}
+          saveState={saveState}
+          onSend={sendLink}
+          onSignOut={signOut}
+          onRestart={() => { setAnswers(EMPTY); setWelcomeBack(false); setScreen(0); }}
+        />
       )}
     </div>
   );

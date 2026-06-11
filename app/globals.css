@@ -208,6 +208,22 @@
   .ask button svg{width:18px;height:18px;display:block}
   .coach .note{font-size:11.5px;color:var(--ink-soft);margin-top:11px;font-style:italic}
 
+  /* keep-your-ground (accounts) — same card language as the coach */
+  .keep{position:relative;background:var(--card);border-radius:18px;padding:20px;box-shadow:var(--sh-2);margin-top:24px;overflow:hidden;isolation:isolate}
+  .keep::before{content:"";position:absolute;inset:0;border-radius:18px;padding:1px;z-index:2;
+    background:linear-gradient(135deg,rgba(199,154,61,.45),var(--line-soft));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+  .keep .kp-head{display:flex;align-items:flex-start;gap:12px}
+  .keep .kic{width:38px;height:38px;border-radius:11px;flex:0 0 auto;background:linear-gradient(150deg,var(--gold),#a87f2c);display:grid;place-items:center;color:#fff;box-shadow:0 6px 16px rgba(168,127,44,.3)}
+  .keep .kic svg{width:19px;height:19px}
+  .keep b{font-size:14.5px;display:block}
+  .keep .kp-head span{font-size:12.5px;color:var(--ink-soft);display:block;margin-top:2px;line-height:1.5}
+  .keep .ask{margin-top:14px}
+  .keep .kp-sent{background:var(--bg-2);border-radius:14px;border-top-left-radius:5px;padding:14px 16px;font-size:14px;color:var(--ink);font-family:"Newsreader",serif;line-height:1.55;margin-top:14px}
+  .keep .kp-err{font-size:12px;color:var(--clay);margin-top:9px}
+  .keep .kp-row{margin-top:13px}
+  .keep .ask button[disabled]{opacity:.5;cursor:wait;transform:none}
+
   .restart-row{text-align:center;margin-top:34px}
   .restart{background:none;border:1.5px solid var(--line);color:var(--ink-soft);font-family:inherit;font-size:12.5px;padding:10px 20px;border-radius:999px;cursor:pointer;transition:.2s var(--ease)}
   .restart:hover{border-color:var(--moss);color:var(--ink);transform:translateY(-1px)}
